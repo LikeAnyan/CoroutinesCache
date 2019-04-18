@@ -11,6 +11,7 @@ import kotlinx.coroutines.Deferred
 import org.koin.core.parameter.parametersOf
 import org.koin.standalone.KoinComponent
 import org.koin.standalone.inject
+import kotlin.reflect.KClass
 
 class ProcessorProviderImpl(
         private val cacheParams: CacheParams,
@@ -23,9 +24,9 @@ class ProcessorProviderImpl(
 
     private val getRecordAction: GetRecordAction by inject { parametersOf(scope) }
 
-    override suspend fun <T> process(cacheObjectParams: CacheObjectParams?): T? {
+    override suspend fun <T: Any> process(cacheObjectParams: CacheObjectParams?): T? {
         if (cacheObjectParams == null) return null
-        val record = getRecordAction.getRecord<T>(cacheObjectParams.key, cacheObjectParams.useIfExpired)
+        val record = getRecordAction.getRecord<T>(cacheObjectParams.key, (cacheObjectParams.entryClass as KClass<T>), cacheObjectParams.useIfExpired)
         return if (record == null) {
             deleteRecordAction.deleteByKey(cacheObjectParams.key)
             val data = (cacheObjectParams.loaderFun as? Deferred<T>)?.await()

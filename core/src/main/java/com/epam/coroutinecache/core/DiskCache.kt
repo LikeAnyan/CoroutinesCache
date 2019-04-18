@@ -5,13 +5,15 @@ import java.io.File
 import java.io.FileWriter
 import java.lang.Exception
 import java.lang.reflect.ParameterizedType
+import java.lang.reflect.Type
+import kotlin.reflect.KClass
 
 class DiskCache(
-        private val cacheDirectory: File,
+        external val cacheDirectory: File,
         private val jsonMapper: JsonMapper
 ): Persistence {
 
-    override fun <T> saveRecord(key: String, record: Record<T>) = synchronized(this) {
+    override fun <T: Any> saveRecord(key: String, record: Record<T>) = synchronized(this) {
         val safetyKey = safetyKey(key)
         val type = jsonMapper.newParameterizedType(Record::class.java, Object::class.java)
         val serializedJson = jsonMapper.toJson(record, type)
@@ -66,7 +68,7 @@ class DiskCache(
         }
     }
 
-    override fun <T> getRecord(key: String): Record<T>? {
+    override fun <T: Any> getRecord(key: String, entryClass: KClass<*>): Record<T>? {
         synchronized(this) {
             try {
                 val safetyKey = safetyKey(key)
@@ -74,17 +76,21 @@ class DiskCache(
                 val type = jsonMapper.newParameterizedType(Record::class.java, Object::class.java)
                 val tempData: Record<T>? = jsonMapper.fromJson(resultedFile, type)
 
-                val dataClassName = if (tempData?.getDataClassName() == null) Object::class.java else Class.forName(tempData.getDataClassName())
+                val dataClass = if (entryClass is Annotation) {
+                    if (tempData?.getDataClassName() == null) Object::class.java else Class.forName(tempData.getDataClassName())
+                } else {
+                    entryClass.java
+                }
                 val collectionClassName = if (tempData?.getDataCollectionClassName() == null) Object::class.java else Class.forName(tempData.getDataCollectionClassName())
 
                 val isCollection = Collection::class.java.isAssignableFrom(collectionClassName)
                 val isArray = collectionClassName.isArray
                 val isMap = Map::class.java.isAssignableFrom(collectionClassName)
-                val typeRecord: ParameterizedType
+                val typeRecord: Type
 
                 when {
                     isCollection -> {
-                        val typeCollection = jsonMapper.newParameterizedType(collectionClassName, dataClassName)
+                        val typeCollection = jsonMapper.newParameterizedType(collectionClassName, dataClass)
                         typeRecord = jsonMapper.newParameterizedType(Record::class.java, typeCollection)
                     }
                     isArray -> {
@@ -92,11 +98,11 @@ class DiskCache(
                     }
                     isMap -> {
                         val classKeyMap = Class.forName(tempData?.getDataKeyMapClassName())
-                        val typeMap = jsonMapper.newParameterizedType(collectionClassName, classKeyMap, dataClassName)
+                        val typeMap = jsonMapper.newParameterizedType(collectionClassName, classKeyMap, dataClass)
                         typeRecord = jsonMapper.newParameterizedType(Record::class.java, typeMap)
                     }
                     else -> {
-                        typeRecord = jsonMapper.newParameterizedType(Record::class.java, dataClassName)
+                        typeRecord = jsonMapper.newParameterizedType(Record::class.java, dataClass)
                     }
                 }
                 val diskRecord: Record<T>? = jsonMapper.fromJson(resultedFile.absoluteFile, typeRecord)

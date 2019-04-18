@@ -9,7 +9,7 @@ import java.util.concurrent.TimeUnit
 
 interface CacheProviders {
 
-    @ProviderKey("TestKey")
+    @ProviderKey("TestKey", Data::class)
     @LifeTime(value = 1L, unit = TimeUnit.MINUTES)
     @Expirable
     @UseIfExpired

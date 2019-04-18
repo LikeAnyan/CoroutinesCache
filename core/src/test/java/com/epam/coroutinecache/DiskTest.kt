@@ -13,7 +13,7 @@ class DiskTest: BaseTest() {
     fun testRetrieveRecordAsObject() {
         diskCache.saveRecord(KEY, Record(MockDataString(VALUE_STRING)))
 
-        val retrievedData = diskCache.getRecord<MockDataString>(KEY)
+        val retrievedData = diskCache.getRecord<MockDataString>(KEY, MockDataString::class)
         assertEquals(retrievedData?.getData()?.getMessage(), VALUE_STRING)
     }
 
@@ -22,7 +22,7 @@ class DiskTest: BaseTest() {
         val mocks = listOf(MockDataString(VALUE_STRING), MockDataString(VALUE_STRING + 1))
         diskCache.saveRecord(KEY, Record(mocks))
 
-        val retrievedData = diskCache.getRecord<List<MockDataString>>(KEY)
+        val retrievedData = diskCache.getRecord<List<MockDataString>>(KEY, MockDataString::class)
         for (i in 0 until mocks.size) {
             assertEquals(mocks[i], retrievedData?.getData()?.get(i))
         }
@@ -33,7 +33,7 @@ class DiskTest: BaseTest() {
         val mocks = arrayOf(MockDataString(VALUE_STRING), MockDataString(VALUE_STRING + 1))
         diskCache.saveRecord(KEY, Record(mocks))
 
-        val retrievedData = diskCache.getRecord<Array<MockDataString>>(KEY)
+        val retrievedData = diskCache.getRecord<Array<MockDataString>>(KEY, MockDataString::class)
         assertArrayEquals(mocks, retrievedData?.getData())
     }
 
@@ -44,7 +44,7 @@ class DiskTest: BaseTest() {
         testMap[1] = MockDataString(VALUE_STRING + 1)
         diskCache.saveRecord(KEY, Record(testMap))
 
-        val retrievedData = diskCache.getRecord<Map<Int, MockDataString>>(KEY)
+        val retrievedData = diskCache.getRecord<Map<Int, MockDataString>>(KEY, MockDataString::class)
         for ((k, v) in testMap) {
             assertEquals(v, retrievedData?.getData()?.get(k))
         }
@@ -63,7 +63,7 @@ class DiskTest: BaseTest() {
 
         diskCache.saveRecord(KEY, Record(testMap))
 
-        val retrievedData = diskCache.getRecord<Map<Any, Any>>(KEY)
+        val retrievedData = diskCache.getRecord<Map<Any, Any>>(KEY, Any::class)
         assertEquals(retrievedData?.getData()?.get(0), VALUE_STRING + 2)
         assertEquals(retrievedData?.getData()?.get(1), VALUE_STRING + 3)
 

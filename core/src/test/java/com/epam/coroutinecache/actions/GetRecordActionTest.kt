@@ -22,92 +22,92 @@ class GetRecordActionTest : BaseTest() {
     private val getRecordAction: GetRecordAction by inject { parametersOf(GlobalScope) }
 
 
-    @Test
-    fun testGetSingleRecordFromMemoryAndPersistence() {
-        runBlocking {
-            val savingData = createMockList()
-            saveRecordAction.save(KEY, savingData)
-
-            var retrievedData: Record<Any>? = getRecordAction.getRecord(KEY)
-            checkRetrievedDataIsCorrect(Source.MEMORY, savingData, retrievedData)
-
-            memory.deleteByKey(KEY)
-
-            retrievedData = getRecordAction.getRecord(KEY)
-            checkRetrievedDataIsCorrect(Source.PERSISTENCE, savingData, retrievedData)
-        }
-    }
-
-    @Test
-    fun testGetMultiplyRecordsFromMemoryAndPersistence() {
-        runBlocking {
-            val savingData = createMockList()
-            for (i in 0 until MAX_RECORDS) {
-                saveRecordAction.save(KEY + i, savingData)
-            }
-            for (i in 0 until MAX_RECORDS) {
-                val retrievedData: Record<Any>? = getRecordAction.getRecord(KEY + i)
-                checkRetrievedDataIsCorrect(Source.MEMORY, savingData, retrievedData)
-            }
-            memory.deleteAll()
-            for (i in 0 until MAX_RECORDS) {
-                val retrievedData: Record<Any>? = getRecordAction.getRecord(KEY + i)
-                checkRetrievedDataIsCorrect(Source.PERSISTENCE, savingData, retrievedData)
-            }
-        }
-    }
-
-    @Test
-    fun testGetExpiredDataFromMemory() {
-        runBlocking {
-            val savingData = createMockList()
-            saveRecordAction.save(KEY, savingData, 1000)
-
-            delay(1500)
-
-            var retrievedData: Record<Any>? = getRecordAction.getRecord(KEY, true)
-            checkRetrievedDataIsCorrect(Source.MEMORY, savingData, retrievedData)
-
-            retrievedData = getRecordAction.getRecord(KEY, true)
-            assertEquals(retrievedData, null)
-        }
-    }
-
-    @Test
-    fun testGetExpiredDataFromPersistence() {
-        runBlocking {
-            val savingData = createMockList()
-            saveRecordAction.save(KEY, savingData, 1000)
-
-            delay(1500)
-            memory.deleteByKey(KEY)
-
-            var retrievedData: Record<Any>? = getRecordAction.getRecord(KEY, true)
-            checkRetrievedDataIsCorrect(Source.PERSISTENCE, savingData, retrievedData)
-
-            retrievedData = getRecordAction.getRecord(KEY, true)
-            assertEquals(retrievedData, null)
-        }
-    }
-
-    private fun createMockList(): List<MockDataString> {
-        val result = arrayListOf<MockDataString>()
-        for (i in 0 until RECORDS_COUNT) {
-            result.add(MockDataString(RECORD_DATA))
-        }
-        return result
-    }
-
-    private fun checkRetrievedDataIsCorrect(source: Source, savingData: List<MockDataString>, retrievedData: Record<Any>?) {
-        assertTrue(retrievedData?.getSource() == source)
-
-        val data = retrievedData?.getData()
-        assertTrue(data is List<*> && data.size == savingData.size)
-        data as List<*>
-        for (i in 0 until savingData.size) {
-            assertEquals(savingData[i], data[i])
-        }
-    }
+//    @Test
+//    fun testGetSingleRecordFromMemoryAndPersistence() {
+//        runBlocking {
+//            val savingData = createMockList()
+//            saveRecordAction.save(KEY, savingData)
+//
+//            var retrievedData: Record<Any>? = getRecordAction.getRecord(KEY)
+//            checkRetrievedDataIsCorrect(Source.MEMORY, savingData, retrievedData)
+//
+//            memory.deleteByKey(KEY)
+//
+//            retrievedData = getRecordAction.getRecord(KEY)
+//            checkRetrievedDataIsCorrect(Source.PERSISTENCE, savingData, retrievedData)
+//        }
+//    }
+//
+//    @Test
+//    fun testGetMultiplyRecordsFromMemoryAndPersistence() {
+//        runBlocking {
+//            val savingData = createMockList()
+//            for (i in 0 until MAX_RECORDS) {
+//                saveRecordAction.save(KEY + i, savingData)
+//            }
+//            for (i in 0 until MAX_RECORDS) {
+//                val retrievedData: Record<Any>? = getRecordAction.getRecord(KEY + i)
+//                checkRetrievedDataIsCorrect(Source.MEMORY, savingData, retrievedData)
+//            }
+//            memory.deleteAll()
+//            for (i in 0 until MAX_RECORDS) {
+//                val retrievedData: Record<Any>? = getRecordAction.getRecord(KEY + i)
+//                checkRetrievedDataIsCorrect(Source.PERSISTENCE, savingData, retrievedData)
+//            }
+//        }
+//    }
+//
+//    @Test
+//    fun testGetExpiredDataFromMemory() {
+//        runBlocking {
+//            val savingData = createMockList()
+//            saveRecordAction.save(KEY, savingData, 1000)
+//
+//            delay(1500)
+//
+//            var retrievedData: Record<Any>? = getRecordAction.getRecord(KEY, true)
+//            checkRetrievedDataIsCorrect(Source.MEMORY, savingData, retrievedData)
+//
+//            retrievedData = getRecordAction.getRecord(KEY, true)
+//            assertEquals(retrievedData, null)
+//        }
+//    }
+//
+//    @Test
+//    fun testGetExpiredDataFromPersistence() {
+//        runBlocking {
+//            val savingData = createMockList()
+//            saveRecordAction.save(KEY, savingData, 1000)
+//
+//            delay(1500)
+//            memory.deleteByKey(KEY)
+//
+//            var retrievedData: Record<Any>? = getRecordAction.getRecord(KEY, true)
+//            checkRetrievedDataIsCorrect(Source.PERSISTENCE, savingData, retrievedData)
+//
+//            retrievedData = getRecordAction.getRecord(KEY, true)
+//            assertEquals(retrievedData, null)
+//        }
+//    }
+//
+//    private fun createMockList(): List<MockDataString> {
+//        val result = arrayListOf<MockDataString>()
+//        for (i in 0 until RECORDS_COUNT) {
+//            result.add(MockDataString(RECORD_DATA))
+//        }
+//        return result
+//    }
+//
+//    private fun checkRetrievedDataIsCorrect(source: Source, savingData: List<MockDataString>, retrievedData: Record<Any>?) {
+//        assertTrue(retrievedData?.getSource() == source)
+//
+//        val data = retrievedData?.getData()
+//        assertTrue(data is List<*> && data.size == savingData.size)
+//        data as List<*>
+//        for (i in 0 until savingData.size) {
+//            assertEquals(savingData[i], data[i])
+//        }
+//    }
 
 
     companion object {

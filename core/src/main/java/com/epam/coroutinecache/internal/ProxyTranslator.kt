@@ -9,6 +9,7 @@ import java.lang.IllegalArgumentException
 import java.lang.IllegalStateException
 import java.lang.reflect.Method
 import java.util.concurrent.TimeUnit
+import kotlin.reflect.KClass
 
 /**
  * Class that retrieves all object params from annotations and function that
@@ -35,6 +36,7 @@ class ProxyTranslator {
         cacheObjectParams.isExpirable = isMethodExpirable(method)
         cacheObjectParams.useIfExpired = useMethodIfExpired(method)
         cacheObjectParams.key = getMethodKey(method)
+        cacheObjectParams.entryClass = getMethodClass(method)
         cacheObjectParams.loaderFun = getDataDeferred(method, objectMethods)
 
         cacheObjectParamsMap[method] = cacheObjectParams
@@ -61,6 +63,11 @@ class ProxyTranslator {
     private fun getMethodKey(method: Method): String {
         val annotation = method.getAnnotation(ProviderKey::class.java) ?: return method.name + method.declaringClass + method.returnType
         return annotation.key
+    }
+
+    private fun getMethodClass(method: Method): KClass<*> {
+        val annotation = method.getAnnotation(ProviderKey::class.java) ?: return Object::class
+        return annotation.entryClass
     }
 
     private fun getDataDeferred(method: Method, objectMethods: Array<out Any>?): Deferred<*> {
