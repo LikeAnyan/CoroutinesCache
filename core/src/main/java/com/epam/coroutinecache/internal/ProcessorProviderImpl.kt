@@ -23,9 +23,9 @@ class ProcessorProviderImpl(
 
     private val getRecordAction: GetRecordAction by inject { parametersOf(scope) }
 
-    override suspend fun <T> process(cacheObjectParams: CacheObjectParams?): T? {
+    override suspend fun <T: Any> process(cacheObjectParams: CacheObjectParams?): T? {
         if (cacheObjectParams == null) return null
-        val record = getRecordAction.getRecord<T>(cacheObjectParams.key, cacheObjectParams.useIfExpired)
+        val record = getRecordAction.getRecord<T>(cacheObjectParams.key, cacheObjectParams.entryType!!, cacheObjectParams.useIfExpired)
         return if (record == null) {
             deleteRecordAction.deleteByKey(cacheObjectParams.key)
             val data = (cacheObjectParams.loaderFun as? Deferred<T>)?.await()
